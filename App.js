@@ -6,6 +6,7 @@ import base64 from 'react-native-base64';
 import RenderHtml from 'react-native-render-html';
 import { useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DashboardCharts from './DashboardCharts';
 
 const servidor_playlist = 'http://129.148.24.46:8081/playlist';
 const caminhoPlaylist = `${FileSystem.documentDirectory}playlist.json`;
@@ -16,6 +17,13 @@ export default function ReprodutorDePlaylist() {
   const [carregando, setCarregando] = useState(false);
   const [exibindoPlaylist, setExibindoPlaylist] = useState(false);
   const { width } = useWindowDimensions();
+
+  const dados_dash = [
+    { name: 'A', responsible: 'João', progress: 80, endDate: '2023-12-15', status: 'Em Andamento' },
+    { name: 'B', responsible: 'Maria', progress: 100, endDate: '2023-11-30', status: 'Concluído' },
+    { name: 'C', responsible: 'Carlos', progress: 50, endDate: '2024-01-10', status: 'Em Andamento' },
+    { name: 'D', responsible: 'Ana', progress: 30, endDate: '2024-02-20', status: 'Atrasado' },
+  ];
 
    // Função para salvar a playlist no sistema de arquivos
   const salvarPlaylistLocal = async (novaPlaylist) => {
@@ -77,6 +85,8 @@ export default function ReprodutorDePlaylist() {
         fileName: item.file.fileName,
         time: item.time,
       }));
+  
+      novaPlaylist.push({ type: 'dashboard', time: 15 });
 
       setPlaylist(novaPlaylist);
       salvarPlaylistLocal(novaPlaylist);
@@ -100,42 +110,9 @@ export default function ReprodutorDePlaylist() {
 }
 };
 
-// const verificarAlteracaoPlaylist = async () => {
-//   try {
-//     const response = await fetch(`${servidor_playlist}/ultimaModificacao`);
-//     const responseText = await response.text();
-
-//     // Verifica se a resposta é JSON antes de tentar fazer o parse
-//     if (response.headers.get('content-type')?.includes('application/json')) {
-//       const { ultimaModificacao } = JSON.parse(responseText);
-
-//       // Lê a playlist salva localmente
-//       const playlistSalva = await FileSystem.readAsStringAsync(caminhoPlaylist, {
-//         encoding: FileSystem.EncodingType.UTF8,
-//       });
-//       const playlistLocal = JSON.parse(playlistSalva);
-
-//       // Compara a última modificação
-//       if (playlistLocal.ultimaModificacao !== ultimaModificacao) {
-//         buscarPlaylist();
-//       }
-//     } else {
-//       console.error('Erro: resposta do servidor não está em formato JSON.', responseText);
-//     }
-//   } catch (erro) {
-//     console.error('Erro ao verificar alteração da playlist:', erro.message);
-//   }
-// };
-
-//   useEffect(() => {
-//     carregarPlaylistLocal();
-//     const intervalId = setInterval(verificarAlteracaoPlaylist, 30000); // Verifica a cada 30 segundos
-
-//     return () => clearInterval(intervalId); // Limpa o intervalo ao desmontar
-//   }, []);
-
   // Função para identificar o tipo de mídia a partir da extensão do arquivo
   const obterTipoDeMidia = (fileName) => {
+    if (!fileName) return 'dashboard'; // Dashboard não possui `fileName`
     const formato = fileName.split('.').pop().toLowerCase();
     switch (formato) {
       case 'jpg':
@@ -149,7 +126,7 @@ export default function ReprodutorDePlaylist() {
       case 'html':
         return 'html';
       default:
-        return 'unsupported';
+        return 'null';
     }
   };
 
@@ -168,6 +145,15 @@ export default function ReprodutorDePlaylist() {
 
   const renderizarMidia = () => {
     const midiaAtual = playlist[indiceAtual];
+
+    if (midiaAtual.type === 'dashboard') {
+      return (
+        <View style={styles.midia}>
+          <DashboardCharts projects={dados_dash} />
+        </View>
+      );
+    }
+
     const { fileContent, fileName } = midiaAtual;
     const tipoDeMidia = obterTipoDeMidia(fileName);
     const urlArquivo = `data:${tipoDeMidia};base64,${fileContent}`;

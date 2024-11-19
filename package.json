@@ -23,10 +23,13 @@
     "react-dom": "18.3.1",
     "react-native": "0.76.1",
     "react-native-base64": "^0.2.1",
+    "react-native-chart-kit": "^6.12.0",
     "react-native-fs": "^2.20.0",
     "react-native-render-html": "^6.3.4",
+    "react-native-svg": "^15.9.0",
     "react-native-web": "~0.19.10",
-    "react-native-webview": "13.12.2"
+    "react-native-webview": "13.12.2",
+    "recharts": "^2.13.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
