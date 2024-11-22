@@ -1,15 +1,67 @@
-import React from 'react';
-import { Text, StyleSheet, ScrollView, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, StyleSheet, ScrollView, View, ActivityIndicator } from 'react-native';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
 
 const screenWidth = Dimensions.get('window').width;
 
-const DashboardCharts = ({ projects }) => {
+const DashboardCharts = () => {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('http://129.148.24.46:8085/dash');
+        if (!response.ok) {
+          throw new Error(`Erro ao buscar dados: ${response.statusText}`);
+        }
+        const data = await response.json();
+
+        // Transforma os dados no formato esperado
+        const formattedProjects = [
+          {
+            name: data.nome,
+            status: data.status === 'Fazendo' ? 'Em Andamento' : data.status,
+            startDate: data.dtInicio,
+            endDate: data.dtFinal,
+            responsible: data.responsavel,
+            progress: data.conclusao,
+          },
+        ];
+        setProjects(formattedProjects);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Carregando dados do dashboard...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Erro: {error}</Text>
+      </View>
+    );
+  }
+
   // Dados para o gráfico de barras (Progresso dos Projetos) com responsáveis
   const progressData = projects.map((project) => ({
     name: `${project.name} - ${project.responsible}`,
-    progress: project.progress,
+    progress: Math.min(Math.max(project.progress, 0), 100),
     endDate: project.endDate,
   }));
 
@@ -48,9 +100,10 @@ const DashboardCharts = ({ projects }) => {
         <BarChart
           data={barChartData}
           width={screenWidth * 0.9} // Ajuste proporcional à tela
-          height={250}
+          height={280}
           yAxisLabel=""
           yAxisSuffix="%"
+          fromZero={true}
           chartConfig={{
             backgroundColor: 'transparent',
             backgroundGradientFrom: '#ffffff',
@@ -62,7 +115,7 @@ const DashboardCharts = ({ projects }) => {
               dx: -5, // Ajuste fino para mover as labels no eixo X
             },
           }}
-          verticalLabelRotation={30}
+          verticalLabelRotation={0}
         />
       </View>
 
@@ -92,21 +145,35 @@ const DashboardCharts = ({ projects }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingTop: 60, // Adiciona espaço inicial para descer os gráficos abaixo do botão de voltar
-    paddingBottom: 20, // Espaçamento adicional no final da tela
+    paddingTop: 90,
+    paddingBottom: 20,
     backgroundColor: '#f5f5f5',
-    alignItems: 'center', // Centraliza os gráficos horizontalmente
+    alignItems: 'center',
   },
   chartWrapper: {
-    marginBottom: 100, // Espaçamento entre os gráficos
-    width: '95%', // Ajusta a largura do gráfico proporcional à tela
-    alignItems: 'center', // Centraliza o conteúdo interno dos gráficos
+    marginBottom: 70,
+    width: '80%',
+    alignItems: 'center',
   },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 15, // Espaço entre o título e o gráfico
+    marginBottom: 15,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
   },
 });
 

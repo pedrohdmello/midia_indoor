@@ -17,13 +17,7 @@ export default function ReprodutorDePlaylist() {
   const [carregando, setCarregando] = useState(false);
   const [exibindoPlaylist, setExibindoPlaylist] = useState(false);
   const { width } = useWindowDimensions();
-
-  const dados_dash = [
-    { name: 'A', responsible: 'João', progress: 80, endDate: '2023-12-15', status: 'Em Andamento' },
-    { name: 'B', responsible: 'Maria', progress: 100, endDate: '2023-11-30', status: 'Concluído' },
-    { name: 'C', responsible: 'Carlos', progress: 50, endDate: '2024-01-10', status: 'Em Andamento' },
-    { name: 'D', responsible: 'Ana', progress: 30, endDate: '2024-02-20', status: 'Atrasado' },
-  ];
+  const [exibindoDashboard, setExibindoDashboard] = useState(false);
 
    // Função para salvar a playlist no sistema de arquivos
   const salvarPlaylistLocal = async (novaPlaylist) => {
@@ -149,7 +143,7 @@ export default function ReprodutorDePlaylist() {
     if (midiaAtual.type === 'dashboard') {
       return (
         <View style={styles.midia}>
-          <DashboardCharts projects={dados_dash} />
+          <DashboardCharts/>
         </View>
       );
     }
@@ -210,22 +204,31 @@ export default function ReprodutorDePlaylist() {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       {carregando ? (
         <ActivityIndicator size="large" color="#0000ff" />
+      ) : exibindoDashboard ? (
+        <View style={{ flex: 1, width: '100%' }}>
+          <TouchableOpacity onPress={() => setExibindoDashboard(false)} style={styles.botaoVoltar}>
+            <Ionicons name="arrow-back" size={30} color="black" />
+          </TouchableOpacity>
+          <DashboardCharts/>
+        </View>
       ) : exibindoPlaylist ? (
         <View style={{ flex: 1, width: '100%' }}>
-          <TouchableOpacity onPress={voltarParaSelecao} style={{ position: 'absolute', top: 40, left: 20, zIndex: 1 }}>
+          <TouchableOpacity onPress={voltarParaSelecao} style={styles.botaoVoltar}>
             <Ionicons name="arrow-back" size={30} color="black" />
           </TouchableOpacity>
           {renderizarMidia()}
         </View>
       ) : (
         <View style={styles.container}>
-        <Button title="Baixar playlist do Servidor" onPress={buscarPlaylist} />
-        <View style={styles.spacer} />
-        <Button title="Carregar playlist local" onPress={carregarPlaylistLocal} />
-      </View>
+          <Button title="Baixar playlist do Servidor" onPress={buscarPlaylist} />
+          <View style={styles.spacer} />
+          <Button title="Carregar playlist local" onPress={carregarPlaylistLocal} />
+          <View style={styles.spacer} />
+          <Button title="Abrir Dashboard" onPress={() => setExibindoDashboard(true)} />
+        </View>
       )}
     </View>
-  );
+  );  
 }
 
 const styles = StyleSheet.create({

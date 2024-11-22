@@ -23,12 +23,19 @@
       "newArchEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "webpack"
     },
     "extra": {
       "eas": {
         "projectId": "2176469b-807b-41e4-aaa6-38e3f4ac0ee8"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2176469b-807b-41e4-aaa6-38e3f4ac0ee8"
     }
   }
 }
